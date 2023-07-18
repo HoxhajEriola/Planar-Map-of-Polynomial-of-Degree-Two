@@ -1,0 +1,1 @@
+# Planar-Map-of-Polynomial-of-Degree-Two
