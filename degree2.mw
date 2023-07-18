@@ -1,0 +1,35 @@
+# An interactive Maple file for reconstructing a planar map of degree 2 from its discriminant
+# Josef Schicho, 18.7.2023
+read(aux):
+
+# Random form of degree d in s,t,u
+Randf := proc(n,d);
+  `+`(seq(seq(Randr(n)*s^i*t^j*u^(d-i-j),j=0..d-i),i=0..d));
+end proc;
+
+# generate a random input
+F0 := [Randf(100,2),Randf(100,2),Randf(100,2)];
+F0 := [s^2+t*u,t^2+2*u*s,u^2-t*s];
+R0 := det(jacobian(F0,[s,t,u]));
+B := elimout([x-h*F0[1],y-h*F0[2],z-h*F0[3],R0],[s,t,u,h])[1];
+
+# compute the dual
+Bdual := elimout([s-h*diff(B,x),t-h*diff(B,y),u-h*diff(B,z),B],[x,y,z,h])[1];
+
+# compute the Hessian of the dual
+H := det(hessian(Bdual,[s,t,u]));
+
+# find mu such that H+mu*Bdual has Hessian Bdual
+cand := H+mu*Bdual;
+zw := det(hessian(cand,[s,t,u])); # should be a scalar multiple of Bdual
+sbz := expand(coeff(zw,s,3)*Bdual-coeff(Bdual,s,3)*zw);
+mus := solve(primpart(sbz,mu))[1]; # the first solution is rational
+sol := subs(mu=mus,cand);
+
+# the gradient is a solution
+F := grad(sol,[s,t,u]);
+
+# test if the discriminant is correct
+R := det(jacobian(F,[s,t,u]));
+B1 := elimout([x-h*F[1],y-h*F[2],z-h*F[3],R],[s,t,u,h])[1];
+factor(B1/B); # should be a constant

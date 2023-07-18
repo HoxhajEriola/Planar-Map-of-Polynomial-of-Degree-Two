@@ -1,0 +1,83 @@
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# This file contains functions for arithmetic of dual quaternions and polynomials
+# over them, and some random generators.
+
+with(FGb):
+with(linalg):
+kernelopts(printbytes=false);
+
+
+degdim := proc(G)
+  # degree and dimension of the zero set of an ideal
+  # the variables are taken from indets, so this does not work for cylinders
+  local hi;
+  hi := fgb_gbasis_lm(G,0,[],[op(indets(G))])[2];
+  fgb_hilbert(hi,0,[],[op(indets(G))],1);
+end proc;
+
+hilb := proc(G,d,N)
+  local hi,Hi;
+  hi := fgb_gbasis_lm(G,0,[],[op(indets(G))])[2];
+  Hi := fgb_hilbert(hi,0,[],[op(indets(G))],t);
+  taylor(Hi[1]/(1-t)^d,t,N);
+end proc;
+
+elimin := proc(eqs,varin)
+  # fgb_gbasis_elim simplified
+  local vars,varout;
+  vars := [op(indets(eqs))];
+  varout := select(T->not (T in varin), vars);
+  fgb_gbasis_elim(eqs,0,varout,vars);
+end proc;
+
+elimout := proc(eqs,varout)
+  # fgb_gbasis_elim simplified
+  local vars;
+  vars := [op(indets(eqs))];
+  fgb_gbasis_elim(eqs,0,varout,vars);
+end proc;
+
+Randi := proc(n)
+  local arb;
+  # random integer
+  arb := rand(-n..n);
+  arb();
+end proc;
+
+Randr := proc(n)
+  # random rational number
+  local arb,r;
+  arb := rand(-n..n);
+  r := (arb()+n+1)/(arb()+n+1);
+  if rand()<rand() then r := -r fi;
+  r;
+end proc;
+
+with(combinat):
+
+alldets := proc(M,k)
+  # determinants of kxk submatrices of M
+  local rows, cols,rr,cc,all:
+  rows := choose(rowdim(M),k);
+  cols := choose(coldim(M),k);
+  all := NULL;
+  for rr in rows do
+    for cc in cols do
+      all:=all,det(submatrix(M,rr,cc));
+    od;
+  od;
+  all;
+end proc;
+
